@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">WebStart</string>
+    <string name="app_name">Your TV Ads Host</string>
 
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
@@ -10,4 +10,9 @@
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
     <string name="new_url">New URL = </string>
+    <string name="new_password">New Password = </string>
+    <string name="enter_password">Enter password</string>
+    <string name="incorrect_password">Incorrect password!</string>
+    <string name="change_password">Change password</string>
+    <string name="exit">Exit</string>
 </resources>

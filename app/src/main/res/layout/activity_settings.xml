@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/change_serial"
+        android:layout_margin="5dp"
+        android:gravity="center"
+        android:onClick="onClickSERIAL"/>
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/change_password"
+        android:layout_margin="5dp"
+        android:gravity="center"
+        android:onClick="onClickPassword"/>
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/exit"
+        android:layout_margin="5dp"
+        android:gravity="center"
+        android:onClick="onClickExit"/>
+</LinearLayout>

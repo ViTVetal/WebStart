@@ -4,8 +4,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-public class BootReciever extends BroadcastReceiver
-{
+import com.example.vit_vetal_.webstart.ui.activities.MainActivity;
+
+public class BootReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {

@@ -60,6 +60,8 @@ public class MainActivity extends Activity {
 
         enableBackToAppFeature();
 
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
         webview = new WebView(this);
 
         setContentView(webview);

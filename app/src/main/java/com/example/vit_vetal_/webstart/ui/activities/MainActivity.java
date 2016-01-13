@@ -53,6 +53,8 @@ public class MainActivity extends Activity {
 
         setContentView(R.layout.activity_main);
 
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
         webview = new WebView(this);
 
         setContentView(webview);

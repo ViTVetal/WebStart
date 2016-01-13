@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
@@ -96,7 +97,12 @@ public class SettingsActivity extends Activity {
     }
 
     public void onClickExit(View v) {
+        PackageManager pm = getPackageManager();
+        pm.clearPackagePreferredActivities("com.example.vit_vetal_.webstart");
+
+        this.finishAffinity();
         finish();
+        System.exit(0);
     }
 
     @Override

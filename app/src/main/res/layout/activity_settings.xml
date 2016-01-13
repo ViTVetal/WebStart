@@ -18,12 +18,4 @@
         android:layout_margin="5dp"
         android:gravity="center"
         android:onClick="onClickPassword"/>
-
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/exit"
-        android:layout_margin="5dp"
-        android:gravity="center"
-        android:onClick="onClickExit"/>
 </LinearLayout>

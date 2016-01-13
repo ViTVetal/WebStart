@@ -94,16 +94,4 @@ public class SettingsActivity extends Activity {
 
         builder.show();
     }
-
-    public void onClickExit(View v) {
-        finish();
-    }
-
-    @Override
-    public void onBackPressed() {
-        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-        startActivity(intent);
-
-        finish();
-    }
 }

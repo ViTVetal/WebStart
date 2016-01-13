@@ -3,7 +3,10 @@ package com.example.vit_vetal_.webstart.ui.activities;
 import android.Manifest;
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.app.AlarmManager;
 import android.app.AlertDialog;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -27,11 +30,13 @@ import android.webkit.WebViewClient;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.example.vit_vetal_.webstart.BackToAppReceiver;
 import com.example.vit_vetal_.webstart.BuildConfig;
 import com.example.vit_vetal_.webstart.R;
 import com.example.vit_vetal_.webstart.utilities.Consts;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.zip.ZipEntry;
@@ -52,6 +57,8 @@ public class MainActivity extends Activity {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         setContentView(R.layout.activity_main);
+
+        enableBackToAppFeature();
 
         webview = new WebView(this);
 
@@ -108,6 +115,8 @@ public class MainActivity extends Activity {
                 case KeyEvent.KEYCODE_BACK:
                     if (webview.canGoBack()) {
                         webview.goBack();
+                    } else {
+                        finish();
                     }
                     return true;
             }
@@ -177,21 +186,6 @@ public class MainActivity extends Activity {
         builder.show();
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-
-        ActivityManager activityManager = (ActivityManager) getApplicationContext()
-                .getSystemService(Context.ACTIVITY_SERVICE);
-
-        activityManager.moveTaskToFront(getTaskId(), 0);
-    }
-
-    @Override
-    public boolean onSearchRequested () {
-        return true;
-    }
-
     //only for Android 6
     @Override
     public void onRequestPermissionsResult(int requestCode,
@@ -206,5 +200,14 @@ public class MainActivity extends Activity {
                 return;
             }
         }
+    }
+
+    private void enableBackToAppFeature() {
+        Intent intent = new Intent(this, BackToAppReceiver.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
+
+        AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+        alarmManager.cancel(pendingIntent);
+        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, Calendar.getInstance().getTimeInMillis() + 1 * 30 * 1000, 1 * 30 * 1000, pendingIntent);
     }
 }

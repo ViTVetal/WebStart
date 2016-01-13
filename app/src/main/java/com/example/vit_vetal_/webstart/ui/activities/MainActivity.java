@@ -208,6 +208,6 @@ public class MainActivity extends Activity {
 
         AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
         alarmManager.cancel(pendingIntent);
-        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, Calendar.getInstance().getTimeInMillis() + 1 * 30 * 1000, 1 * 30 * 1000, pendingIntent);
+        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, Calendar.getInstance().getTimeInMillis() + 1 * 60 * 1000, 1 * 60 * 1000, pendingIntent);
     }
 }

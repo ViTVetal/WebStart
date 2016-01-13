@@ -26,12 +26,9 @@ public class BackToAppReceiver extends BroadcastReceiver {
         }
 
         if(!isForeground(context, "com.example.vit_vetal_.webstart")) {
-            Log.d("myLogs", "START");
             Intent startActivityIntent = new Intent(context, MainActivity.class);
             startActivityIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(startActivityIntent);
-        } else {
-            Log.d("myLogs", "NO START");
         }
     }
 

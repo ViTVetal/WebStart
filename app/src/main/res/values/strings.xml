@@ -6,7 +6,7 @@
     <string name="loading">Loading…</string>
     <string name="title">SERIAL page</string>
     <string name="change_serial">Change SERIAL</string>
-    <string name="default_url">http://dv.yourtvads.com/SERIAL</string>
+    <string name="default_url">http://www.rewardsmonkey.com/SERIAL</string>
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
     <string name="new_url">New URL = </string>

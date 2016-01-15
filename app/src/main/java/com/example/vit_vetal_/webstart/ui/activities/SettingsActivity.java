@@ -1,7 +1,9 @@
 package com.example.vit_vetal_.webstart.ui.activities;
 
 import android.app.Activity;
+import android.app.AlarmManager;
 import android.app.AlertDialog;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -11,6 +13,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.example.vit_vetal_.webstart.BackToAppReceiver;
 import com.example.vit_vetal_.webstart.BuildConfig;
 import com.example.vit_vetal_.webstart.R;
 import com.example.vit_vetal_.webstart.utilities.Consts;
@@ -93,5 +96,17 @@ public class SettingsActivity extends Activity {
         });
 
         builder.show();
+    }
+
+    public void onClickExit(View v) {
+        Intent intent = new Intent(this, BackToAppReceiver.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
+
+        AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+        alarmManager.cancel(pendingIntent);
+
+        this.finishAffinity();
+        finish();
+        System.exit(0);
     }
 }

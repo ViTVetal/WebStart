@@ -1,10 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
-    <Button
+    android:layout_height="match_parent"
+    android:gravity="center_horizontal">
+    <ScrollView
         android:layout_width="match_parent"
+        android:layout_height="match_parent">
+    <LinearLayout
+        android:orientation="vertical" android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center_horizontal">
+    <Button
+        android:layout_width="300dp"
         android:layout_height="wrap_content"
         android:text="@string/change_serial"
         android:layout_margin="5dp"
@@ -12,7 +19,7 @@
         android:onClick="onClickSERIAL"/>
 
     <Button
-        android:layout_width="match_parent"
+        android:layout_width="300dp"
         android:layout_height="wrap_content"
         android:text="@string/change_password"
         android:layout_margin="5dp"
@@ -20,10 +27,36 @@
         android:onClick="onClickPassword"/>
 
     <Button
-        android:layout_width="match_parent"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:text="@string/change_persist_time"
+        android:layout_margin="5dp"
+        android:gravity="center"
+        android:onClick="onClickPersist"/>
+
+    <Button
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:text="@string/change_autostart_time"
+        android:layout_margin="5dp"
+        android:gravity="center"
+        android:onClick="onClickAutostart"/>
+
+    <Button
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:text="@string/connect_tv"
+        android:layout_margin="5dp"
+        android:gravity="center"
+        android:onClick="onClickTV"/>
+
+    <Button
+        android:layout_width="300dp"
         android:layout_height="wrap_content"
         android:text="@string/exit"
         android:layout_margin="5dp"
         android:gravity="center"
         android:onClick="onClickExit"/>
+    </LinearLayout>
+    </ScrollView>
 </LinearLayout>

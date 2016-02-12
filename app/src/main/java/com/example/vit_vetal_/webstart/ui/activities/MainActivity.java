@@ -42,58 +42,61 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import butterknife.ButterKnife;
+import butterknife.InjectView;
+
 public class MainActivity extends Activity {
     private Window wind;
     private SharedPreferences preferences;
     private final int MY_PERMISSIONS_REQUEST = 100;
-    private WebView webview;
-    private float x1,x2;
-    static final int MIN_DISTANCE = 250;
-    private Map<String, String> headers = new HashMap<String, String>();
+
+    @InjectView(R.id.etPasscode)
+    EditText etPasscode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-
         setContentView(R.layout.activity_main);
 
-        enableBackToAppFeature();
+        ButterKnife.inject(this);
+
+     /*   try {
+            Log.d("TAG", "open WiFi display settings in HTC");
+            startActivity(new
+                    Intent("com.htc.wifidisplay.CONFIGURE_MODE_NORMAL"));
+        } catch (Exception e) {
+            try {
+                Log.d("TAG", "open WiFi display settings in Samsung");
+                startActivity(new
+                        Intent("com.samsung.wfd.LAUNCH_WFD_PICKER_DLG"));
+            } catch (Exception e2) {
+                Log.d("TAG", "open WiFi display settings in stock Android");
+                startActivity(new
+                        Intent("android.settings.WIFI_DISPLAY_SETTINGS"));
+            }
+        }*/
+
+        preferences = getSharedPreferences(BuildConfig.APPLICATION_ID, Context.MODE_PRIVATE);
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-        webview = new WebView(this);
-
-        setContentView(webview);
-        webview.setOnTouchListener(new View.OnTouchListener() {
-            public boolean onTouch(View v, MotionEvent event) {
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        x1 = event.getX();
-                        break;
-                    case MotionEvent.ACTION_UP:
-                        x2 = event.getX();
-                        float deltaX = x2 - x1;
-                        if (deltaX > MIN_DISTANCE) {
-                            showPasswordDialog();
-                        }
-                        break;
+        if(getIntent().getBooleanExtra("REBOOT", false)) {
+            Thread thread = new Thread() {
+                @Override
+                public void run() {
+                    try {
+                        sleep(1000);
+                        Log.d("myLogs", "FINISH");
+                        finish();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
-                return false;
-            }
-        });
-        webview.setWebViewClient(new WebViewClient());
+            };
 
-        preferences = getSharedPreferences(BuildConfig.APPLICATION_ID, Context.MODE_PRIVATE);
-        String url = preferences.getString(Consts.URL_TAG, getResources().getString(R.string.default_url));
-
-        try {
-            headers.put(Consts.BUILD_DATE_HEADER, getAppBuildDate());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        headers.put(Consts.PASSWORD_HEADER, preferences.getString(Consts.PASSWORD_TAG, Consts.DEFAULT_PASSWORD));
-
+            thread.start();
+        } else
+            enableBackToAppFeature();
         //only for Android 6
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.READ_PHONE_STATE)
@@ -105,25 +108,25 @@ public class MainActivity extends Activity {
                         new String[]{Manifest.permission.READ_PHONE_STATE},
                         MY_PERMISSIONS_REQUEST);
             }
-        } else {
-            webview.loadUrl(url.replace("SERIAL", getDeviceId(this)), headers);
         }
     }
 
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (event.getAction() == KeyEvent.ACTION_DOWN) {
-            switch (keyCode) {
-                case KeyEvent.KEYCODE_BACK:
-                    if (webview.canGoBack()) {
-                        webview.goBack();
-                    } else {
-                        finish();
-                    }
-                    return true;
-            }
+    public void onClickOk(View v) {
+        String enteredPassword = etPasscode.getText().toString();
+        String password = preferences.getString(Consts.PASSWORD_TAG, Consts.DEFAULT_PASSWORD);
+        etPasscode.setText("");
+        if(enteredPassword.equals(password)) {
+            Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
+            startActivity(intent);
+        } else {
+            Toast toast = Toast.makeText(getApplicationContext(),
+                    getResources().getString(R.string.incorrect_password), Toast.LENGTH_SHORT);
+            toast.show();
         }
-        return super.onKeyDown(keyCode, event);
+    }
+
+    public void onClickExit(View view) {
+        finish();
     }
 
     private String getAppBuildDate() throws Exception {
@@ -142,6 +145,7 @@ public class MainActivity extends Activity {
         wind.addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
         wind.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
         wind.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+        Log.d("myLogs", "UNLOCK");
     }
 
     public String getDeviceId(Context context) {
@@ -196,10 +200,26 @@ public class MainActivity extends Activity {
             case MY_PERMISSIONS_REQUEST: {
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    String url = preferences.getString(Consts.URL_TAG, getResources().getString(R.string.default_url));
-                    webview.loadUrl(url.replace("SERIAL", getDeviceId(this)), headers);
                 }
                 return;
+            }
+        }
+    }
+
+    public void onClickTV(View v) {
+        try {
+            Log.d("TAG", "open WiFi display settings in HTC");
+            startActivity(new
+                    Intent("com.htc.wifidisplay.CONFIGURE_MODE_NORMAL"));
+        } catch (Exception e) {
+            try {
+                Log.d("TAG", "open WiFi display settings in Samsung");
+                startActivity(new
+                        Intent("com.samsung.wfd.LAUNCH_WFD_PICKER_DLG"));
+            } catch (Exception e2) {
+                Log.d("TAG", "open WiFi display settings in stock Android");
+                startActivity(new
+                        Intent("android.settings.WIFI_DISPLAY_SETTINGS"));
             }
         }
     }
@@ -208,8 +228,10 @@ public class MainActivity extends Activity {
         Intent intent = new Intent(this, BackToAppReceiver.class);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
 
+        int backTime = preferences.getInt(Consts.PERSIST_TIME_TAG, Consts.DEFAULT_PERSIST_TIME);
+        Log.d("myLogs", backTime + " BACK TIME");
         AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
         alarmManager.cancel(pendingIntent);
-        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, Calendar.getInstance().getTimeInMillis() + 1 * 60 * 1000, 1 * 60 * 1000, pendingIntent);
+        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, Calendar.getInstance().getTimeInMillis() + backTime * 60 * 1000, backTime * 60 * 1000, pendingIntent);
     }
 }

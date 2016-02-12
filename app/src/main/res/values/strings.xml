@@ -6,7 +6,7 @@
     <string name="loading">Loading…</string>
     <string name="title">SERIAL page</string>
     <string name="change_serial">Change SERIAL</string>
-    <string name="default_url">http://www.rewardsmonkey.com/SERIAL</string>
+    <string name="default_url">http://dv.yourtvads.com/SERIAL</string>
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
     <string name="new_url">New URL = </string>
@@ -14,5 +14,13 @@
     <string name="enter_password">Enter password</string>
     <string name="incorrect_password">Incorrect password!</string>
     <string name="change_password">Change password</string>
+    <string name="change_persist_time">Change persist time (min)</string>
+    <string name="change_autostart_time">Change autostart time (sec)</string>
     <string name="exit">Exit</string>
+    <string name="connect_tv">Connect to TV</string>
+    <string name="enter_passcode">ENTER PASSCODE</string>
+    <string name="report">REPORT ERRORS</string>
+    <string name="report_number">Call 555-555-5555</string>
+    <string name="new_persist_time">New Persist Time = </string>
+    <string name="new_autostart_time">New Autostart Time = </string>
 </resources>

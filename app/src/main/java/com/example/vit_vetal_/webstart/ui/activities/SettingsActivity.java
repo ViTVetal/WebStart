@@ -9,6 +9,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.InputType;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -96,6 +98,90 @@ public class SettingsActivity extends Activity {
         });
 
         builder.show();
+    }
+
+    public void onClickPersist(View v) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(getResources().getString(R.string.change_persist_time));
+
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_NUMBER);
+
+        int prePersistTime = preferences.getInt(Consts.PERSIST_TIME_TAG, Consts.DEFAULT_PERSIST_TIME);
+        input.setText(String.valueOf(prePersistTime));
+        builder.setView(input);
+
+        builder.setPositiveButton(getResources().getString(R.string.ok), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                int newTime = Integer.valueOf(input.getText().toString());
+                preferences.edit().putInt(Consts.PERSIST_TIME_TAG, newTime).commit();
+
+                Toast toast = Toast.makeText(getApplicationContext(),
+                        getResources().getString(R.string.new_persist_time) + newTime, Toast.LENGTH_SHORT);
+                toast.show();
+
+            }
+        });
+        builder.setNegativeButton(getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
+    }
+
+    public void onClickAutostart(View v) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(getResources().getString(R.string.change_autostart_time));
+
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_NUMBER);
+
+        int preAutostartTime = preferences.getInt(Consts.AUTOSTART_TIME_TAG, Consts.DEFAULT_AUTOSTART_TIME);
+        input.setText(String.valueOf(preAutostartTime));
+        builder.setView(input);
+
+        builder.setPositiveButton(getResources().getString(R.string.ok), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                int newTime = Integer.valueOf(input.getText().toString());
+                preferences.edit().putInt(Consts.AUTOSTART_TIME_TAG, newTime).commit();
+
+                Toast toast = Toast.makeText(getApplicationContext(),
+                        getResources().getString(R.string.new_autostart_time) + newTime, Toast.LENGTH_SHORT);
+                toast.show();
+
+            }
+        });
+        builder.setNegativeButton(getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
+    }
+
+    public void onClickTV(View v) {
+        try {
+            Log.d("TAG", "open WiFi display settings in HTC");
+            startActivity(new
+                    Intent("com.htc.wifidisplay.CONFIGURE_MODE_NORMAL"));
+        } catch (Exception e) {
+            try {
+                Log.d("TAG", "open WiFi display settings in Samsung");
+                startActivity(new
+                        Intent("com.samsung.wfd.LAUNCH_WFD_PICKER_DLG"));
+            } catch (Exception e2) {
+                Log.d("TAG", "open WiFi display settings in stock Android");
+                startActivity(new
+                        Intent("android.settings.WIFI_DISPLAY_SETTINGS"));
+            }
+        }
     }
 
     public void onClickExit(View v) {

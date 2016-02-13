@@ -23,4 +23,5 @@
     <string name="report_number">Call 555-555-5555</string>
     <string name="new_persist_time">New Persist Time = </string>
     <string name="new_autostart_time">New Autostart Time = </string>
+    <string name="launch_dolphin">Launch Dolphin</string>
 </resources>

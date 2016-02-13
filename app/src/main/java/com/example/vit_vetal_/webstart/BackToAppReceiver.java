@@ -3,6 +3,8 @@ package com.example.vit_vetal_.webstart;
 import android.app.ActivityManager;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
+import android.app.usage.UsageStats;
+import android.app.usage.UsageStatsManager;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -11,20 +13,25 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.net.Uri;
-import android.preference.Preference;
+import android.os.Build;
+import android.provider.Browser;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.example.vit_vetal_.webstart.ui.activities.MainActivity;
 import com.example.vit_vetal_.webstart.utilities.Consts;
+import com.jaredrummler.android.processes.ProcessManager;
+import com.jaredrummler.android.processes.models.AndroidAppProcess;
 
+import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -64,7 +71,9 @@ public class BackToAppReceiver extends BroadcastReceiver {
         if(!isForeground(context, "mobi.mgeek.TunnyBrowser")) {
             String urlString= url.replace("SERIAL", getDeviceId(context));
             Intent startActivityIntent =new Intent(Intent.ACTION_VIEW, Uri.parse(urlString));
-            startActivityIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivityIntent.setFlags(Intent.FLAG_FROM_BACKGROUND | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivityIntent.putExtra(Browser.EXTRA_APPLICATION_ID, "mobi.mgeek.TunnyBrowser");
+
             startActivityIntent.setPackage("mobi.mgeek.TunnyBrowser");
             try {
                 context.startActivity(startActivityIntent);
@@ -93,8 +102,76 @@ public class BackToAppReceiver extends BroadcastReceiver {
 
     public boolean isForeground(Context context, String myPackage) {
         ActivityManager manager = (ActivityManager) context.getSystemService(context.ACTIVITY_SERVICE);
-        List<ActivityManager.RunningTaskInfo> runningTaskInfo = manager.getRunningTasks(1);
-        ComponentName componentInfo = runningTaskInfo.get(0).topActivity;
-        return componentInfo.getPackageName().equals(myPackage);
+        if (Build.VERSION.SDK_INT >= 21) {
+            final int PROCESS_STATE_TOP = 2;
+            ActivityManager.RunningAppProcessInfo currentInfo = null;
+            Field field = null;
+            try {
+                field = ActivityManager.RunningAppProcessInfo.class.getDeclaredField("processState");
+            } catch (Exception ignored) {
+            }
+            ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+            List<ActivityManager.RunningAppProcessInfo> appList = am.getRunningAppProcesses();
+            for (ActivityManager.RunningAppProcessInfo app : appList) {
+                if (app.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND
+                        && app.importanceReasonCode == ActivityManager.RunningAppProcessInfo.REASON_UNKNOWN) {
+                    Integer state = null;
+                    try {
+                        state = field.getInt(app);
+                    } catch (Exception e) {
+                    }
+                    if (state != null && state == PROCESS_STATE_TOP) {
+                        currentInfo = app;
+                        break;
+                    }
+                }
+            }
+            return currentInfo.processName.equals(myPackage);
+        } else {
+            List<ActivityManager.RunningTaskInfo> runningTaskInfo = manager.getRunningTasks(1);
+            ComponentName componentInfo = runningTaskInfo.get(0).topActivity;
+            return componentInfo.getPackageName().equals(myPackage);
+        }
+//        UsageStatsManager usm = (UsageStatsManager)context.getSystemService("usagestats");
+//        long time = System.currentTimeMillis();
+//        List<UsageStats> appList = usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY,  time - 1000*1000, time);
+//        if (appList != null && appList.size() > 0) {
+//            SortedMap<Long, UsageStats> mySortedMap = new TreeMap<Long, UsageStats>();
+//            for (UsageStats usageStats : appList) {
+//                mySortedMap.put(usageStats.getLastTimeUsed(), usageStats);
+//            }
+//            if (mySortedMap != null && !mySortedMap.isEmpty()) {
+//                Log.d("myLogs", mySortedMap.get(mySortedMap.lastKey()).getPackageName());
+//            }
+//        }
+//        if(ProcessManager.getRunningProcesses().get(0).name.equals(myPackage)) {
+//            return true;
+//        }
+
+      /*  final int PROCESS_STATE_TOP = 2;
+        ActivityManager.RunningAppProcessInfo currentInfo = null;
+        Field field = null;
+        try {
+            field = ActivityManager.RunningAppProcessInfo.class.getDeclaredField("processState");
+        } catch (Exception ignored) {
+        }
+        ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        List<ActivityManager.RunningAppProcessInfo> appList = am.getRunningAppProcesses();
+        for (ActivityManager.RunningAppProcessInfo app : appList) {
+            if (app.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND
+                    && app.importanceReasonCode == ActivityManager.RunningAppProcessInfo.REASON_UNKNOWN) {
+                Integer state = null;
+                try {
+                    state = field.getInt(app);
+                } catch (Exception e) {
+                }
+                if (state != null && state == PROCESS_STATE_TOP) {
+                    currentInfo = app;
+                    break;
+                }
+            }
+        }
+        Log.d("myLogs", currentInfo.processName);
+        return false;*/
     }
 }

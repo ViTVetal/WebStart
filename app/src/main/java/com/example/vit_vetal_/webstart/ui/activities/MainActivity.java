@@ -148,6 +148,17 @@ public class MainActivity extends Activity {
         Log.d("myLogs", "UNLOCK");
     }
 
+    public void onClickLaunch(View v) {
+        Intent intent = new Intent(this, BackToAppReceiver.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
+
+        int backTime = preferences.getInt(Consts.PERSIST_TIME_TAG, Consts.DEFAULT_PERSIST_TIME);
+        Log.d("myLogs", backTime + " BACK TIME");
+        AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+        alarmManager.cancel(pendingIntent);
+        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, Calendar.getInstance().getTimeInMillis(), backTime * 60 * 1000, pendingIntent);
+    }
+
     public String getDeviceId(Context context) {
         final String deviceId = ((TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE)).getDeviceId();
         if (deviceId != null) {

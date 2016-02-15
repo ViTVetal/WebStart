@@ -1,8 +1,6 @@
 package com.example.vit_vetal_.webstart;
 
 import android.app.ActivityManager;
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
 import android.content.ActivityNotFoundException;
@@ -11,7 +9,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.ApplicationInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.Browser;
@@ -19,25 +16,19 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.crashlytics.android.Crashlytics;
 import com.example.vit_vetal_.webstart.utilities.Consts;
-import com.jaredrummler.android.processes.ProcessManager;
-import com.jaredrummler.android.processes.models.AndroidAppProcess;
-
-import java.lang.reflect.Field;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
+
+import io.fabric.sdk.android.Fabric;
 
 public class BackToAppReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
+        Fabric.with(context, new Crashlytics());
         Log.d("myLogs", "onReceive");
         ArrayList<String> runningactivities = new ArrayList<String>();
 
@@ -49,25 +40,9 @@ public class BackToAppReceiver extends BroadcastReceiver {
             runningactivities.add(0,services.get(i1).topActivity.toString());
         }
 
-        Intent i = new Intent(context, BackToAppReceiver.class);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, i, 0);
         SharedPreferences preferences = context.getSharedPreferences(BuildConfig.APPLICATION_ID, Context.MODE_PRIVATE);
-        int backTime = preferences.getInt(Consts.PERSIST_TIME_TAG, Consts.DEFAULT_PERSIST_TIME);
-
-        AlarmManager alarmManager = (AlarmManager) context.getSystemService(context.ALARM_SERVICE);
-        alarmManager.cancel(pendingIntent);
-        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, Calendar.getInstance().getTimeInMillis() + backTime * 60 * 1000, backTime * 60 * 1000, pendingIntent);
 
         String url = preferences.getString(Consts.URL_TAG, context.getResources().getString(R.string.default_url));
-        Map<String, String> headers = new HashMap<String, String>();
-
-        try {
-            headers.put(Consts.BUILD_DATE_HEADER, getAppBuildDate(context));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        headers.put(Consts.PASSWORD_HEADER, preferences.getString(Consts.PASSWORD_TAG, Consts.DEFAULT_PASSWORD));
-
         if(!isForeground(context, "mobi.mgeek.TunnyBrowser")) {
             String urlString= url.replace("SERIAL", getDeviceId(context));
             Intent startActivityIntent =new Intent(Intent.ACTION_VIEW, Uri.parse(urlString));
@@ -92,86 +67,33 @@ public class BackToAppReceiver extends BroadcastReceiver {
         }
     }
 
-    private String getAppBuildDate(Context context) throws Exception {
-        ApplicationInfo ai = context.getPackageManager().getApplicationInfo(context.getPackageName(), 0);
-        ZipFile zf = new ZipFile(ai.sourceDir);
-        ZipEntry ze = zf.getEntry("classes.dex");
-        long time = ze.getTime();
-        return new SimpleDateFormat("yyyyMMdd").format(new java.util.Date(time));
-    }
-
     public boolean isForeground(Context context, String myPackage) {
-        ActivityManager manager = (ActivityManager) context.getSystemService(context.ACTIVITY_SERVICE);
-        if (Build.VERSION.SDK_INT >= 21) {
-            final int PROCESS_STATE_TOP = 2;
-            ActivityManager.RunningAppProcessInfo currentInfo = null;
-            Field field = null;
-            try {
-                field = ActivityManager.RunningAppProcessInfo.class.getDeclaredField("processState");
-            } catch (Exception ignored) {
-            }
-            ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-            List<ActivityManager.RunningAppProcessInfo> appList = am.getRunningAppProcesses();
-            for (ActivityManager.RunningAppProcessInfo app : appList) {
-                if (app.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND
-                        && app.importanceReasonCode == ActivityManager.RunningAppProcessInfo.REASON_UNKNOWN) {
-                    Integer state = null;
-                    try {
-                        state = field.getInt(app);
-                    } catch (Exception e) {
+            ActivityManager manager = (ActivityManager) context.getSystemService(context.ACTIVITY_SERVICE);
+            if (Build.VERSION.SDK_INT >= 21) {
+                String topPackageName = "";
+                    UsageStatsManager mUsageStatsManager = (UsageStatsManager)context.getSystemService(Context.USAGE_STATS_SERVICE);
+                    long time = System.currentTimeMillis();
+                    // We get usage stats for the last 10 seconds
+                    List<UsageStats> stats = mUsageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, 0, time);
+                    // Sort the stats by the last time used
+                    if(stats != null) {
+                        Log.e("myLogs", "stats != null");
+                        SortedMap<Long,UsageStats> mySortedMap = new TreeMap<Long,UsageStats>();
+                        for (UsageStats usageStats : stats) {
+                            Log.d("myLogs", usageStats.getPackageName());
+                            mySortedMap.put(usageStats.getLastTimeUsed(),usageStats);
+                        }
+                        if(mySortedMap != null && !mySortedMap.isEmpty()) {
+                            topPackageName =  mySortedMap.get(mySortedMap.lastKey()).getPackageName();
+                            Log.e("myLogs", topPackageName);
+                        }
                     }
-                    if (state != null && state == PROCESS_STATE_TOP) {
-                        currentInfo = app;
-                        break;
-                    }
-                }
+                Log.d("myLogs", topPackageName);
+                return topPackageName.equals(myPackage);
+            } else {
+                List<ActivityManager.RunningTaskInfo> runningTaskInfo = manager.getRunningTasks(1);
+                ComponentName componentInfo = runningTaskInfo.get(0).topActivity;
+                return componentInfo.getPackageName().equals(myPackage);
             }
-            return currentInfo.processName.equals(myPackage);
-        } else {
-            List<ActivityManager.RunningTaskInfo> runningTaskInfo = manager.getRunningTasks(1);
-            ComponentName componentInfo = runningTaskInfo.get(0).topActivity;
-            return componentInfo.getPackageName().equals(myPackage);
-        }
-//        UsageStatsManager usm = (UsageStatsManager)context.getSystemService("usagestats");
-//        long time = System.currentTimeMillis();
-//        List<UsageStats> appList = usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY,  time - 1000*1000, time);
-//        if (appList != null && appList.size() > 0) {
-//            SortedMap<Long, UsageStats> mySortedMap = new TreeMap<Long, UsageStats>();
-//            for (UsageStats usageStats : appList) {
-//                mySortedMap.put(usageStats.getLastTimeUsed(), usageStats);
-//            }
-//            if (mySortedMap != null && !mySortedMap.isEmpty()) {
-//                Log.d("myLogs", mySortedMap.get(mySortedMap.lastKey()).getPackageName());
-//            }
-//        }
-//        if(ProcessManager.getRunningProcesses().get(0).name.equals(myPackage)) {
-//            return true;
-//        }
-
-      /*  final int PROCESS_STATE_TOP = 2;
-        ActivityManager.RunningAppProcessInfo currentInfo = null;
-        Field field = null;
-        try {
-            field = ActivityManager.RunningAppProcessInfo.class.getDeclaredField("processState");
-        } catch (Exception ignored) {
-        }
-        ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-        List<ActivityManager.RunningAppProcessInfo> appList = am.getRunningAppProcesses();
-        for (ActivityManager.RunningAppProcessInfo app : appList) {
-            if (app.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND
-                    && app.importanceReasonCode == ActivityManager.RunningAppProcessInfo.REASON_UNKNOWN) {
-                Integer state = null;
-                try {
-                    state = field.getInt(app);
-                } catch (Exception e) {
-                }
-                if (state != null && state == PROCESS_STATE_TOP) {
-                    currentInfo = app;
-                    break;
-                }
-            }
-        }
-        Log.d("myLogs", currentInfo.processName);
-        return false;*/
     }
 }

@@ -10,6 +10,7 @@
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
     <string name="new_url">New URL = </string>
+    <string name="new_phone">New phone = </string>
     <string name="new_password">New Password = </string>
     <string name="enter_password">Enter password</string>
     <string name="incorrect_password">Incorrect password!</string>
@@ -20,8 +21,9 @@
     <string name="connect_tv">Connect to TV</string>
     <string name="enter_passcode">ENTER PASSCODE</string>
     <string name="report">REPORT ERRORS</string>
-    <string name="report_number">Call 555-555-5555</string>
+    <string name="report_number">Call</string>
     <string name="new_persist_time">New Persist Time = </string>
     <string name="new_autostart_time">New Autostart Time = </string>
     <string name="launch_dolphin">Launch Dolphin</string>
+    <string name="change_phone">Change phone</string>
 </resources>

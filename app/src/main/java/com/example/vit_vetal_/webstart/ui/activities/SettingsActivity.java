@@ -166,6 +166,38 @@ public class SettingsActivity extends Activity {
         builder.show();
     }
 
+    public void onClickPhone(View v) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(getResources().getString(R.string.change_phone));
+
+        final EditText input = new EditText(this);
+
+        String preAutostartTime = preferences.getString(Consts.PHONE_TAG, Consts.DEFAULT_PHONE);
+        input.setText(String.valueOf(preAutostartTime));
+        builder.setView(input);
+
+        builder.setPositiveButton(getResources().getString(R.string.ok), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String newTime = input.getText().toString();
+                preferences.edit().putString(Consts.PHONE_TAG, newTime).commit();
+
+                Toast toast = Toast.makeText(getApplicationContext(),
+                        getResources().getString(R.string.new_phone) + newTime, Toast.LENGTH_SHORT);
+                toast.show();
+
+            }
+        });
+        builder.setNegativeButton(getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
+    }
+
     public void onClickTV(View v) {
         try {
             Log.d("TAG", "open WiFi display settings in HTC");
@@ -186,7 +218,7 @@ public class SettingsActivity extends Activity {
 
     public void onClickExit(View v) {
         Intent intent = new Intent(this, BackToAppReceiver.class);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
 
         AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
         alarmManager.cancel(pendingIntent);

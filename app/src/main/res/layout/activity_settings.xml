@@ -53,6 +53,14 @@
     <Button
         android:layout_width="300dp"
         android:layout_height="wrap_content"
+        android:text="@string/change_phone"
+        android:layout_margin="5dp"
+        android:gravity="center"
+        android:onClick="onClickPhone"/>
+
+    <Button
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
         android:text="@string/exit"
         android:layout_margin="5dp"
         android:gravity="center"

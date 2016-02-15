@@ -89,7 +89,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="10dp"
-                android:text="@string/report_number"/>
+                android:id="@+id/tvPhone"/>
         </LinearLayout>
     </RelativeLayout>
 

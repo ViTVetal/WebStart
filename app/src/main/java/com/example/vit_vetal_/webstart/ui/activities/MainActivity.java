@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
+import android.app.AppOpsManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -13,8 +14,10 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 
+import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.telephony.TelephonyManager;
@@ -28,8 +31,10 @@ import android.view.WindowManager;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.crashlytics.android.Crashlytics;
 import com.example.vit_vetal_.webstart.BackToAppReceiver;
 import com.example.vit_vetal_.webstart.BuildConfig;
 import com.example.vit_vetal_.webstart.R;
@@ -44,6 +49,7 @@ import java.util.zip.ZipFile;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
+import io.fabric.sdk.android.Fabric;
 
 public class MainActivity extends Activity {
     private Window wind;
@@ -57,46 +63,13 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        Fabric.with(this, new Crashlytics());
         ButterKnife.inject(this);
-
-     /*   try {
-            Log.d("TAG", "open WiFi display settings in HTC");
-            startActivity(new
-                    Intent("com.htc.wifidisplay.CONFIGURE_MODE_NORMAL"));
-        } catch (Exception e) {
-            try {
-                Log.d("TAG", "open WiFi display settings in Samsung");
-                startActivity(new
-                        Intent("com.samsung.wfd.LAUNCH_WFD_PICKER_DLG"));
-            } catch (Exception e2) {
-                Log.d("TAG", "open WiFi display settings in stock Android");
-                startActivity(new
-                        Intent("android.settings.WIFI_DISPLAY_SETTINGS"));
-            }
-        }*/
 
         preferences = getSharedPreferences(BuildConfig.APPLICATION_ID, Context.MODE_PRIVATE);
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
-        if(getIntent().getBooleanExtra("REBOOT", false)) {
-            Thread thread = new Thread() {
-                @Override
-                public void run() {
-                    try {
-                        sleep(1000);
-                        Log.d("myLogs", "FINISH");
-                        finish();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            };
-
-            thread.start();
-        } else
-            enableBackToAppFeature();
         //only for Android 6
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.READ_PHONE_STATE)
@@ -109,6 +82,14 @@ public class MainActivity extends Activity {
                         MY_PERMISSIONS_REQUEST);
             }
         }
+    }
+
+    private boolean checkPermission() {
+        AppOpsManager appOps = (AppOpsManager) getSystemService(Context.APP_OPS_SERVICE);
+        int mode = appOps.checkOpNoThrow("android:get_usage_stats",
+                android.os.Process.myUid(), getPackageName());
+        Log.d("myLogs", "checkPermission = " + (mode == AppOpsManager.MODE_ALLOWED));
+        return mode == AppOpsManager.MODE_ALLOWED;
     }
 
     public void onClickOk(View v) {
@@ -129,14 +110,6 @@ public class MainActivity extends Activity {
         finish();
     }
 
-    private String getAppBuildDate() throws Exception {
-        ApplicationInfo ai = getPackageManager().getApplicationInfo(getPackageName(), 0);
-        ZipFile zf = new ZipFile(ai.sourceDir);
-        ZipEntry ze = zf.getEntry("classes.dex");
-        long time = ze.getTime();
-        return new SimpleDateFormat("yyyyMMdd").format(new java.util.Date(time));
-    }
-
     @Override
     protected void onResume() {
         super.onResume();
@@ -146,61 +119,34 @@ public class MainActivity extends Activity {
         wind.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
         wind.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
         Log.d("myLogs", "UNLOCK");
+
+        SharedPreferences preferences = getSharedPreferences(BuildConfig.APPLICATION_ID, Context.MODE_PRIVATE);
+
+        String preAutostartTime = preferences.getString(Consts.PHONE_TAG, Consts.DEFAULT_PHONE);
+        TextView tvPhone = (TextView) findViewById(R.id.tvPhone);
+        tvPhone.setText(getResources().getString(R.string.report_number) + " " + preAutostartTime);
+
+        if (Build.VERSION.SDK_INT >= 21) {
+            if (!checkPermission()) {
+                Intent intent = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
+                startActivity(intent);
+            } else {
+                enableBackToAppFeature();
+            }
+        } else {
+            enableBackToAppFeature();
+        }
     }
 
     public void onClickLaunch(View v) {
         Intent intent = new Intent(this, BackToAppReceiver.class);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
 
         int backTime = preferences.getInt(Consts.PERSIST_TIME_TAG, Consts.DEFAULT_PERSIST_TIME);
         Log.d("myLogs", backTime + " BACK TIME");
         AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
         alarmManager.cancel(pendingIntent);
         alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, Calendar.getInstance().getTimeInMillis(), backTime * 60 * 1000, pendingIntent);
-    }
-
-    public String getDeviceId(Context context) {
-        final String deviceId = ((TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE)).getDeviceId();
-        if (deviceId != null) {
-            return deviceId;
-        } else {
-            return android.os.Build.SERIAL;
-        }
-    }
-
-    private void showPasswordDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(getResources().getString(R.string.enter_password));
-
-        final EditText input = new EditText(this);
-        input.setInputType(InputType.TYPE_CLASS_TEXT |
-                InputType.TYPE_TEXT_VARIATION_PASSWORD);
-        builder.setView(input);
-
-        builder.setPositiveButton(getResources().getString(R.string.ok), new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                String enteredPassword = input.getText().toString();
-                String password = preferences.getString(Consts.PASSWORD_TAG, Consts.DEFAULT_PASSWORD);
-
-                if(enteredPassword.equals(password)) {
-                    Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
-                    startActivity(intent);
-                } else {
-                    Toast toast = Toast.makeText(getApplicationContext(),
-                            getResources().getString(R.string.incorrect_password), Toast.LENGTH_SHORT);
-                    toast.show();
-                }
-            }
-        });
-        builder.setNegativeButton(getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.cancel();
-            }
-        });
-
-        builder.show();
     }
 
     //only for Android 6
@@ -236,13 +182,13 @@ public class MainActivity extends Activity {
     }
 
     private void enableBackToAppFeature() {
-        Intent intent = new Intent(this, BackToAppReceiver.class);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
+            Intent intent = new Intent(this, BackToAppReceiver.class);
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
 
-        int backTime = preferences.getInt(Consts.PERSIST_TIME_TAG, Consts.DEFAULT_PERSIST_TIME);
-        Log.d("myLogs", backTime + " BACK TIME");
-        AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-        alarmManager.cancel(pendingIntent);
-        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, Calendar.getInstance().getTimeInMillis() + backTime * 60 * 1000, backTime * 60 * 1000, pendingIntent);
+            int backTime = preferences.getInt(Consts.PERSIST_TIME_TAG, Consts.DEFAULT_PERSIST_TIME);
+            Log.d("myLogs", backTime + " BACK TIME");
+            AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+            alarmManager.cancel(pendingIntent);
+            alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, Calendar.getInstance().getTimeInMillis() + backTime * 60 * 1000, backTime * 60 * 1000, pendingIntent);
     }
 }

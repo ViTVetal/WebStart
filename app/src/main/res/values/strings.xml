@@ -26,4 +26,5 @@
     <string name="new_autostart_time">New Autostart Time = </string>
     <string name="launch_dolphin">Launch Dolphin</string>
     <string name="change_phone">Change phone</string>
+    <string name="admin">Admin</string>
 </resources>

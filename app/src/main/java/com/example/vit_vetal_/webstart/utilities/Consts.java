@@ -10,7 +10,7 @@ public class Consts {
     public static String DEFAULT_PASSWORD = "0000";
     public static int DEFAULT_PERSIST_TIME = 1;
     public static int DEFAULT_AUTOSTART_TIME = 15;
-    public static String DEFAULT_PHONE = "555-555-5555";
+    public static String DEFAULT_PHONE = "423-650-4500";
     public static String PASSWORD_HEADER = "PASSWORD";
     public static String BUILD_DATE_HEADER = "APP-BUILD-DATE";
 }

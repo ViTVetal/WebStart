@@ -56,8 +56,9 @@ public class MainActivity extends Activity {
     private SharedPreferences preferences;
     private final int MY_PERMISSIONS_REQUEST = 100;
 
-    @InjectView(R.id.etPasscode)
-    EditText etPasscode;
+
+    @InjectView(R.id.tvURL)
+    TextView tvURL;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,6 +68,10 @@ public class MainActivity extends Activity {
         ButterKnife.inject(this);
 
         preferences = getSharedPreferences(BuildConfig.APPLICATION_ID, Context.MODE_PRIVATE);
+        String url = preferences.getString(Consts.URL_TAG, getResources().getString(R.string.default_url));
+        String urlString= url.replace("SERIAL", getDeviceId(this));
+
+        tvURL.setText(urlString);
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
@@ -84,6 +89,15 @@ public class MainActivity extends Activity {
         }
     }
 
+    public String getDeviceId(Context context) {
+        final String deviceId = ((TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE)).getDeviceId();
+        if (deviceId != null) {
+            return deviceId;
+        } else {
+            return android.os.Build.SERIAL;
+        }
+    }
+
     private boolean checkPermission() {
         AppOpsManager appOps = (AppOpsManager) getSystemService(Context.APP_OPS_SERVICE);
         int mode = appOps.checkOpNoThrow("android:get_usage_stats",
@@ -92,19 +106,55 @@ public class MainActivity extends Activity {
         return mode == AppOpsManager.MODE_ALLOWED;
     }
 
-    public void onClickOk(View v) {
-        String enteredPassword = etPasscode.getText().toString();
-        String password = preferences.getString(Consts.PASSWORD_TAG, Consts.DEFAULT_PASSWORD);
-        etPasscode.setText("");
-        if(enteredPassword.equals(password)) {
-            Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
-            startActivity(intent);
-        } else {
-            Toast toast = Toast.makeText(getApplicationContext(),
-                    getResources().getString(R.string.incorrect_password), Toast.LENGTH_SHORT);
-            toast.show();
-        }
+//    public void onClickOk(View v) {
+//        String enteredPassword = etPasscode.getText().toString();
+//        String password = preferences.getString(Consts.PASSWORD_TAG, Consts.DEFAULT_PASSWORD);
+//        etPasscode.setText("");
+//        if(enteredPassword.equals(password)) {
+//            Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
+//            startActivity(intent);
+//        } else {
+//            Toast toast = Toast.makeText(getApplicationContext(),
+//                    getResources().getString(R.string.incorrect_password), Toast.LENGTH_SHORT);
+//            toast.show();
+//        }
+//    }
+
+    public void onClickPassword(View v) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(getResources().getString(R.string.enter_password));
+
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_TEXT |
+                InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        builder.setView(input);
+
+        builder.setPositiveButton(getResources().getString(R.string.ok), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String enteredPassword = input.getText().toString();
+                String password = preferences.getString(Consts.PASSWORD_TAG, Consts.DEFAULT_PASSWORD);
+
+                if(enteredPassword.equals(password)) {
+                    Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
+                    startActivity(intent);
+                } else {
+                    Toast toast = Toast.makeText(getApplicationContext(),
+                            getResources().getString(R.string.incorrect_password), Toast.LENGTH_SHORT);
+                    toast.show();
+                }
+            }
+        });
+        builder.setNegativeButton(getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
     }
+
 
     public void onClickExit(View view) {
         finish();

@@ -24,7 +24,7 @@
     <string name="report_number">Call</string>
     <string name="new_persist_time">New Persist Time = </string>
     <string name="new_autostart_time">New Autostart Time = </string>
-    <string name="launch_dolphin">Launch Dolphin</string>
+    <string name="launch_dolphin">LAUNCH PROGRAM</string>
     <string name="change_phone">Change phone</string>
     <string name="admin">Admin</string>
 </resources>

@@ -16,18 +16,10 @@
             <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/launch_dolphin"
-                android:layout_marginLeft="20dp"
-                android:layout_marginRight="20dp"
-                android:layout_marginBottom="0dp"
-                android:onClick="onClickLaunch"/>
-
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/connect_tv"
                 android:layout_margin="20dp"
-                android:onClick="onClickTV"/>
+                android:text="@string/admin"
+                android:onClick="onClickPassword"/>
+
         </LinearLayout>
     </RelativeLayout>
 
@@ -40,7 +32,7 @@
         <ImageView
             android:layout_width="75dp"
             android:layout_height="75dp"
-            android:layout_margin="50dp"
+            android:layout_margin="40dp"
             android:src="@drawable/ic_logo"
             android:layout_centerInParent="true"
             android:layout_alignParentTop="true"/>
@@ -55,8 +47,18 @@
             <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/admin"
-                android:onClick="onClickPassword"/>
+                android:text="@string/launch_dolphin"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:layout_marginBottom="0dp"
+                android:onClick="onClickLaunch"/>
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/connect_tv"
+                android:layout_margin="10dp"
+                android:onClick="onClickTV"/>
         </LinearLayout>
         <LinearLayout
             android:layout_width="match_parent"
@@ -67,19 +69,22 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="10dp"
+                android:layout_margin="5dp"
                 android:text="@string/report"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="10dp"
+                android:layout_margin="5dp"
                 android:id="@+id/tvPhone"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="10dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginRight="5dp"
+                android:layout_marginLeft="5dp"
+                android:layout_marginBottom="10dp"
                 android:id="@+id/tvURL"
                 android:textIsSelectable="true"/>
         </LinearLayout>

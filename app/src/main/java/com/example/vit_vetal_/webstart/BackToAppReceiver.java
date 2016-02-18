@@ -13,7 +13,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.provider.Browser;
 import android.telephony.TelephonyManager;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
@@ -29,7 +28,7 @@ public class BackToAppReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         Fabric.with(context, new Crashlytics());
-        Log.d("myLogs", "onReceive");
+
         ArrayList<String> runningactivities = new ArrayList<String>();
 
         ActivityManager activityManager = (ActivityManager)context.getSystemService (Context.ACTIVITY_SERVICE);
@@ -77,18 +76,14 @@ public class BackToAppReceiver extends BroadcastReceiver {
                     List<UsageStats> stats = mUsageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, 0, time);
                     // Sort the stats by the last time used
                     if(stats != null) {
-                        Log.e("myLogs", "stats != null");
                         SortedMap<Long,UsageStats> mySortedMap = new TreeMap<Long,UsageStats>();
                         for (UsageStats usageStats : stats) {
-                            Log.d("myLogs", usageStats.getPackageName());
                             mySortedMap.put(usageStats.getLastTimeUsed(),usageStats);
                         }
                         if(mySortedMap != null && !mySortedMap.isEmpty()) {
                             topPackageName =  mySortedMap.get(mySortedMap.lastKey()).getPackageName();
-                            Log.e("myLogs", topPackageName);
                         }
                     }
-                Log.d("myLogs", topPackageName);
                 return topPackageName.equals(myPackage);
             } else {
                 List<ActivityManager.RunningTaskInfo> runningTaskInfo = manager.getRunningTasks(1);

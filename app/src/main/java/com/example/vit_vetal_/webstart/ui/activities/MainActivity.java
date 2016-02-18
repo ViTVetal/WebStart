@@ -2,17 +2,14 @@ package com.example.vit_vetal_.webstart.ui.activities;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.ActivityManager;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.AppOpsManager;
 import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -23,13 +20,9 @@ import android.support.v4.content.ContextCompat;
 import android.telephony.TelephonyManager;
 import android.text.InputType;
 import android.util.Log;
-import android.view.KeyEvent;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -40,12 +33,7 @@ import com.example.vit_vetal_.webstart.BuildConfig;
 import com.example.vit_vetal_.webstart.R;
 import com.example.vit_vetal_.webstart.utilities.Consts;
 
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -102,23 +90,9 @@ public class MainActivity extends Activity {
         AppOpsManager appOps = (AppOpsManager) getSystemService(Context.APP_OPS_SERVICE);
         int mode = appOps.checkOpNoThrow("android:get_usage_stats",
                 android.os.Process.myUid(), getPackageName());
-        Log.d("myLogs", "checkPermission = " + (mode == AppOpsManager.MODE_ALLOWED));
+
         return mode == AppOpsManager.MODE_ALLOWED;
     }
-
-//    public void onClickOk(View v) {
-//        String enteredPassword = etPasscode.getText().toString();
-//        String password = preferences.getString(Consts.PASSWORD_TAG, Consts.DEFAULT_PASSWORD);
-//        etPasscode.setText("");
-//        if(enteredPassword.equals(password)) {
-//            Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
-//            startActivity(intent);
-//        } else {
-//            Toast toast = Toast.makeText(getApplicationContext(),
-//                    getResources().getString(R.string.incorrect_password), Toast.LENGTH_SHORT);
-//            toast.show();
-//        }
-//    }
 
     public void onClickPassword(View v) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -168,7 +142,6 @@ public class MainActivity extends Activity {
         wind.addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
         wind.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
         wind.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
-        Log.d("myLogs", "UNLOCK");
 
         SharedPreferences preferences = getSharedPreferences(BuildConfig.APPLICATION_ID, Context.MODE_PRIVATE);
 
@@ -193,7 +166,7 @@ public class MainActivity extends Activity {
         PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
 
         int backTime = preferences.getInt(Consts.PERSIST_TIME_TAG, Consts.DEFAULT_PERSIST_TIME);
-        Log.d("myLogs", backTime + " BACK TIME");
+
         AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
         alarmManager.cancel(pendingIntent);
         alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, Calendar.getInstance().getTimeInMillis(), backTime * 60 * 1000, pendingIntent);
@@ -236,7 +209,7 @@ public class MainActivity extends Activity {
             PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
 
             int backTime = preferences.getInt(Consts.PERSIST_TIME_TAG, Consts.DEFAULT_PERSIST_TIME);
-            Log.d("myLogs", backTime + " BACK TIME");
+
             AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
             alarmManager.cancel(pendingIntent);
             alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, Calendar.getInstance().getTimeInMillis() + backTime * 60 * 1000, backTime * 60 * 1000, pendingIntent);

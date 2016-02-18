@@ -8,10 +8,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
-import android.util.Log;
 
 import com.crashlytics.android.Crashlytics;
-import com.example.vit_vetal_.webstart.ui.activities.MainActivity;
 import com.example.vit_vetal_.webstart.utilities.Consts;
 
 import java.util.Calendar;
@@ -26,16 +24,13 @@ public class BootReceiver extends BroadcastReceiver {
 
         if (intent.getAction().equals(Intent.ACTION_BOOT_COMPLETED)){
             try {
-                Log.d("myLogs", "open WiFi display settings in HTC");
                 context.startActivity(new
                         Intent("com.htc.wifidisplay.CONFIGURE_MODE_NORMAL").setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
             } catch (Exception e) {
                 try {
-                    Log.d("myLogs", "open WiFi display settings in Samsung");
                     context.startActivity(new
                             Intent("com.samsung.wfd.LAUNCH_WFD_PICKER_DLG").setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
                 } catch (Exception e2) {
-                    Log.d("myLogs", "open WiFi display settings in stock Android");
                     context.startActivity(new
                             Intent("android.settings.WIFI_DISPLAY_SETTINGS").setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
                 }
@@ -81,7 +76,7 @@ public class BootReceiver extends BroadcastReceiver {
         AppOpsManager appOps = (AppOpsManager) context.getSystemService(Context.APP_OPS_SERVICE);
         int mode = appOps.checkOpNoThrow("android:get_usage_stats",
                 android.os.Process.myUid(), context.getPackageName());
-        Log.d("myLogs", "checkPermission boot = " + (mode == AppOpsManager.MODE_ALLOWED));
+
         return mode == AppOpsManager.MODE_ALLOWED;
     }
 }

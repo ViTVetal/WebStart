@@ -1,6 +1,5 @@
 package com.example.vit_vetal_.webstart.utilities;
 
-
 public class Consts {
     public static String URL_TAG = "url";
     public static String PASSWORD_TAG = "password";

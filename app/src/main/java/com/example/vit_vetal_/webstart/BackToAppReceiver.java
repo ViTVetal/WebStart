@@ -42,17 +42,17 @@ public class BackToAppReceiver extends BroadcastReceiver {
         SharedPreferences preferences = context.getSharedPreferences(BuildConfig.APPLICATION_ID, Context.MODE_PRIVATE);
 
         String url = preferences.getString(Consts.URL_TAG, context.getResources().getString(R.string.default_url));
-        if(!isForeground(context, "mobi.mgeek.TunnyBrowser")) {
+        if(!isForeground(context, "org.mozilla.firefox")) {
             String urlString= url.replace("SERIAL", getDeviceId(context));
             Intent startActivityIntent =new Intent(Intent.ACTION_VIEW, Uri.parse(urlString));
             startActivityIntent.setFlags(Intent.FLAG_FROM_BACKGROUND | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT | Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivityIntent.putExtra(Browser.EXTRA_APPLICATION_ID, "mobi.mgeek.TunnyBrowser");
+            startActivityIntent.putExtra(Browser.EXTRA_APPLICATION_ID, "org.mozilla.firefox");
 
-            startActivityIntent.setPackage("mobi.mgeek.TunnyBrowser");
+            startActivityIntent.setPackage("org.mozilla.firefox");
             try {
                 context.startActivity(startActivityIntent);
             } catch (ActivityNotFoundException e) {
-                Toast.makeText(context, "Dolphin isn't found",Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "Firefox is not found",Toast.LENGTH_SHORT).show();
             }
         }
     }

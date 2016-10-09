@@ -15,10 +15,12 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 
+import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.telephony.TelephonyManager;
 import android.text.InputType;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -30,10 +32,20 @@ import android.webkit.WebViewClient;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.example.vit_vetal_.webstart.BackToAppReceiver;
 import com.example.vit_vetal_.webstart.BuildConfig;
 import com.example.vit_vetal_.webstart.R;
 import com.example.vit_vetal_.webstart.utilities.Consts;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -82,10 +94,14 @@ public class MainActivity extends Activity {
                 return false;
             }
         });
-        webview.setWebViewClient(new WebViewClient());
+        webview.setWebViewClient(new WebViewClient() {
+            @Override public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+                webview.loadUrl("file:///android_asset/error.html");
+            } });
+        webview.getSettings().setJavaScriptEnabled(true);
+        webview.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
 
         preferences = getSharedPreferences(BuildConfig.APPLICATION_ID, Context.MODE_PRIVATE);
-        String url = preferences.getString(Consts.URL_TAG, getResources().getString(R.string.default_url));
 
         try {
             headers.put(Consts.BUILD_DATE_HEADER, getAppBuildDate());
@@ -106,7 +122,20 @@ public class MainActivity extends Activity {
                         MY_PERMISSIONS_REQUEST);
             }
         } else {
-            webview.loadUrl(url.replace("SERIAL", getDeviceId(this)), headers);
+            final Handler handler = new Handler();
+            handler.removeCallbacksAndMessages(null);
+
+            final  Runnable runnableCode = new Runnable() {
+                @Override
+                public void run() {
+
+                    sendVolleyRequestToServer();
+
+                    handler.postDelayed(this, 30000);
+                }
+            };
+
+            handler.post(runnableCode);
         }
     }
 
@@ -142,6 +171,54 @@ public class MainActivity extends Activity {
         wind.addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
         wind.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
         wind.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+
+        View decorView = getWindow().getDecorView();
+        decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+    }
+
+    private void sendVolleyRequestToServer() {
+        String urlPattern = preferences.getString(Consts.URL_TAG, getResources().getString(R.string.default_url));
+
+        String url = String.format(urlPattern,
+                getDeviceId(this),
+                1);
+
+        RequestQueue queue = Volley.newRequestQueue(this);
+
+        JsonObjectRequest getRequest = new JsonObjectRequest(Request.Method.GET, url, null,
+                new Response.Listener<JSONObject>()
+                {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            Log.d("myLogs", response.getString("url"));
+
+                            String url = response.getString("url");
+
+                            if(url != null && !TextUtils.isEmpty(url)) {
+                                webview.clearView();
+                                webview.loadUrl(url, headers);
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                },
+                new Response.ErrorListener()
+                {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.d("myLogs", error.getMessage());
+                    }
+                }
+        );
+
+        queue.add(getRequest);
     }
 
     public String getDeviceId(Context context) {
@@ -196,8 +273,20 @@ public class MainActivity extends Activity {
             case MY_PERMISSIONS_REQUEST: {
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    String url = preferences.getString(Consts.URL_TAG, getResources().getString(R.string.default_url));
-                    webview.loadUrl(url.replace("SERIAL", getDeviceId(this)), headers);
+                    final Handler handler = new Handler();
+                    handler.removeCallbacksAndMessages(null);
+
+                    final  Runnable runnableCode = new Runnable() {
+                        @Override
+                        public void run() {
+
+                            sendVolleyRequestToServer();
+
+                            handler.postDelayed(this, 30000);
+                        }
+                    };
+
+                    handler.post(runnableCode);
                 }
                 return;
             }

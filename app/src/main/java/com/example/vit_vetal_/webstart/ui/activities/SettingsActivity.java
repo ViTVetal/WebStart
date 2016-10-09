@@ -1,5 +1,6 @@
 package com.example.vit_vetal_.webstart.ui.activities;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
@@ -8,9 +9,14 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
+import android.telephony.TelephonyManager;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.vit_vetal_.webstart.BackToAppReceiver;
@@ -20,6 +26,8 @@ import com.example.vit_vetal_.webstart.utilities.Consts;
 
 public class SettingsActivity extends Activity {
     private SharedPreferences preferences;
+    private TextView tvId;
+    private final int MY_PERMISSIONS_REQUEST = 100;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,6 +36,32 @@ public class SettingsActivity extends Activity {
         setContentView(R.layout.activity_settings);
 
         preferences = getSharedPreferences(BuildConfig.APPLICATION_ID, Context.MODE_PRIVATE);
+
+        tvId = (TextView) findViewById(R.id.tvId);
+
+        //only for Android 6
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.READ_PHONE_STATE)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            if (!ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.READ_PHONE_STATE)) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.READ_PHONE_STATE},
+                        MY_PERMISSIONS_REQUEST);
+            }
+        } else {
+            tvId.setText(getDeviceId(this));
+        }
+    }
+
+    public String getDeviceId(Context context) {
+        final String deviceId = ((TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE)).getDeviceId();
+        if (deviceId != null) {
+            return deviceId;
+        } else {
+            return android.os.Build.SERIAL;
+        }
     }
 
     public void onClickSERIAL(View v) {
@@ -108,5 +142,20 @@ public class SettingsActivity extends Activity {
         this.finishAffinity();
         finish();
         System.exit(0);
+    }
+
+    //only for Android 6
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST: {
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    tvId.setText(getDeviceId(this));
+                }
+                return;
+            }
+        }
     }
 }

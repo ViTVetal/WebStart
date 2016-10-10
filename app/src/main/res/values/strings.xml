@@ -1,12 +1,12 @@
 <resources>
-    <string name="app_name">Your TV Ads Host</string>
+    <string name="app_name">AVUITY</string>
 
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
     <string name="loading">Loading…</string>
     <string name="title">SERIAL page</string>
     <string name="change_serial">Change URL</string>
-    <string name="default_url">http://139.162.18.71:8080/avuitycms.com/api/?uid=%1$s&amp;uptime=%2$s</string>
+    <string name="default_url">http://139.162.18.71:8080/avuitycms.com/api</string>
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
     <string name="new_url">New URL = </string>

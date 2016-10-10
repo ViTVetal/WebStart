@@ -62,15 +62,20 @@ public class MainActivity extends Activity {
     private float x1,x2;
     static final int MIN_DISTANCE = 250;
     private Map<String, String> headers = new HashMap<String, String>();
+    private long startTime;
+    MyRunnable runnable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.d("myLogs", "onCreate");
         super.onCreate(savedInstanceState);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         setContentView(R.layout.activity_main);
 
-        enableBackToAppFeature();
+        startTime = Calendar.getInstance().getTimeInMillis();
+
+       // enableBackToAppFeature();
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
@@ -125,17 +130,12 @@ public class MainActivity extends Activity {
             final Handler handler = new Handler();
             handler.removeCallbacksAndMessages(null);
 
-            final  Runnable runnableCode = new Runnable() {
-                @Override
-                public void run() {
+            if(runnable != null)
+                runnable.killRunnable();
 
-                    sendVolleyRequestToServer();
+            runnable = new MyRunnable(handler);
 
-                    handler.postDelayed(this, 30000);
-                }
-            };
-
-            handler.post(runnableCode);
+            handler.post(runnable);
         }
     }
 
@@ -182,11 +182,15 @@ public class MainActivity extends Activity {
     }
 
     private void sendVolleyRequestToServer() {
-        String urlPattern = preferences.getString(Consts.URL_TAG, getResources().getString(R.string.default_url));
+        String urlPattern = preferences.getString(Consts.URL_TAG, getResources().getString(R.string.default_url)) + "/?uid=%1$s&amp;uptime=%2$s";
+
+        long timeFromStart = (Calendar.getInstance().getTimeInMillis() - startTime) / 1000;
 
         String url = String.format(urlPattern,
                 getDeviceId(this),
-                1);
+                timeFromStart);
+
+        Log.d("myLogs", "timeFromStart " + timeFromStart);
 
         RequestQueue queue = Volley.newRequestQueue(this);
 
@@ -214,6 +218,7 @@ public class MainActivity extends Activity {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         Log.d("myLogs", error.getMessage());
+                        webview.loadUrl("file:///android_asset/error.html");
                     }
                 }
         );
@@ -276,21 +281,23 @@ public class MainActivity extends Activity {
                     final Handler handler = new Handler();
                     handler.removeCallbacksAndMessages(null);
 
-                    final  Runnable runnableCode = new Runnable() {
-                        @Override
-                        public void run() {
+                    if(runnable != null)
+                        runnable.killRunnable();
 
-                            sendVolleyRequestToServer();
+                    runnable = new MyRunnable(handler);
 
-                            handler.postDelayed(this, 30000);
-                        }
-                    };
-
-                    handler.post(runnableCode);
+                    handler.post(runnable);
                 }
                 return;
             }
         }
+    }
+
+    protected void onDestroy() {
+        super.onDestroy();
+
+        if(runnable != null)
+            runnable.killRunnable();
     }
 
     private void enableBackToAppFeature() {
@@ -300,5 +307,28 @@ public class MainActivity extends Activity {
         AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
         alarmManager.cancel(pendingIntent);
         alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, Calendar.getInstance().getTimeInMillis() + 1 * 60 * 1000, 1 * 60 * 1000, pendingIntent);
+    }
+
+    public class MyRunnable implements Runnable {
+        private boolean killMe = false;
+        private Handler handler;
+
+        MyRunnable(Handler handler) {
+            this.handler = handler;
+        }
+
+        public void run() {
+            if(killMe)
+                return;
+
+            sendVolleyRequestToServer();
+
+            handler.postDelayed(this, 60000);
+        }
+
+        private void killRunnable() {
+            killMe = true;
+            Log.d("myLogs", killMe + " killMe");
+        }
     }
 }

@@ -16,6 +16,7 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.telephony.TelephonyManager;
@@ -64,10 +65,10 @@ public class MainActivity extends Activity {
     private Map<String, String> headers = new HashMap<String, String>();
     private long startTime;
     MyRunnable runnable;
+    private final String EMULATOR_ID_KEY = "emulator_id";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.d("myLogs", "onCreate");
         super.onCreate(savedInstanceState);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
@@ -182,15 +183,25 @@ public class MainActivity extends Activity {
     }
 
     private void sendVolleyRequestToServer() {
-        String urlPattern = preferences.getString(Consts.URL_TAG, getResources().getString(R.string.default_url)) + "/?uid=%1$s&amp;uptime=%2$s";
+        String urlPattern = preferences.getString(Consts.URL_TAG, getResources().getString(R.string.default_url)) + "/?uid=%1$s&uptime=%2$s";
 
         long timeFromStart = (Calendar.getInstance().getTimeInMillis() - startTime) / 1000;
 
-        String url = String.format(urlPattern,
-                getDeviceId(this),
-                timeFromStart);
+        String deviceId = getDeviceId(this);
 
-        Log.d("myLogs", "timeFromStart " + timeFromStart);
+        if(deviceId == null || TextUtils.isEmpty(deviceId) || Long.parseLong(deviceId) <= 0) {
+            SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+            if(TextUtils.isEmpty(sharedPref.getString(EMULATOR_ID_KEY, ""))) {
+                deviceId = String.valueOf(Calendar.getInstance().getTimeInMillis());
+                sharedPref.edit().putString(EMULATOR_ID_KEY, deviceId).commit();
+            } else {
+                deviceId = sharedPref.getString(EMULATOR_ID_KEY, "");
+            }
+        }
+
+        String url = String.format(urlPattern,
+                Long.toHexString(Long.parseLong(deviceId)),
+                timeFromStart);
 
         RequestQueue queue = Volley.newRequestQueue(this);
 
@@ -200,8 +211,6 @@ public class MainActivity extends Activity {
                     @Override
                     public void onResponse(JSONObject response) {
                         try {
-                            Log.d("myLogs", response.getString("url"));
-
                             String url = response.getString("url");
 
                             if(url != null && !TextUtils.isEmpty(url)) {
@@ -217,7 +226,6 @@ public class MainActivity extends Activity {
                 {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        Log.d("myLogs", error.getMessage());
                         webview.loadUrl("file:///android_asset/error.html");
                     }
                 }
@@ -328,7 +336,6 @@ public class MainActivity extends Activity {
 
         private void killRunnable() {
             killMe = true;
-            Log.d("myLogs", killMe + " killMe");
         }
     }
 }

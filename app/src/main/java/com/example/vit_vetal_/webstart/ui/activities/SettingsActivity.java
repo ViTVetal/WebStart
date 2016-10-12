@@ -11,9 +11,11 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.telephony.TelephonyManager;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -24,10 +26,13 @@ import com.example.vit_vetal_.webstart.BuildConfig;
 import com.example.vit_vetal_.webstart.R;
 import com.example.vit_vetal_.webstart.utilities.Consts;
 
+import java.util.Calendar;
+
 public class SettingsActivity extends Activity {
     private SharedPreferences preferences;
     private TextView tvId;
     private final int MY_PERMISSIONS_REQUEST = 100;
+    private final String EMULATOR_ID_KEY = "emulator_id";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,7 +56,18 @@ public class SettingsActivity extends Activity {
                         MY_PERMISSIONS_REQUEST);
             }
         } else {
-            tvId.setText(getDeviceId(this));
+            String deviceId = getDeviceId(this);
+
+            if(deviceId == null || TextUtils.isEmpty(deviceId) || Long.parseLong(deviceId) <= 0) {
+                SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+                if(TextUtils.isEmpty(sharedPref.getString(EMULATOR_ID_KEY, ""))) {
+                    deviceId = String.valueOf(Calendar.getInstance().getTimeInMillis());
+                    sharedPref.edit().putString(EMULATOR_ID_KEY, deviceId).commit();
+                } else {
+                    deviceId = sharedPref.getString(EMULATOR_ID_KEY, "");
+                }
+            }
+            tvId.setText(Long.toHexString(Long.parseLong(deviceId)));
         }
     }
 
@@ -152,7 +168,18 @@ public class SettingsActivity extends Activity {
             case MY_PERMISSIONS_REQUEST: {
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    tvId.setText(getDeviceId(this));
+                    String deviceId = getDeviceId(this);
+
+                    if(deviceId == null || TextUtils.isEmpty(deviceId) || Long.parseLong(deviceId) <= 0) {
+                        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+                        if(TextUtils.isEmpty(sharedPref.getString(EMULATOR_ID_KEY, ""))) {
+                            deviceId = String.valueOf(Calendar.getInstance().getTimeInMillis());
+                            sharedPref.edit().putString(EMULATOR_ID_KEY, deviceId).commit();
+                        } else {
+                            deviceId = sharedPref.getString(EMULATOR_ID_KEY, "");
+                        }
+                    }
+                    tvId.setText(Long.toHexString(Long.parseLong(deviceId)));
                 }
                 return;
             }

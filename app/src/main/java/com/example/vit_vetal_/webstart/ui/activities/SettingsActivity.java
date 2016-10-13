@@ -67,7 +67,7 @@ public class SettingsActivity extends Activity {
                     deviceId = sharedPref.getString(EMULATOR_ID_KEY, "");
                 }
             }
-            tvId.setText(Long.toHexString(Long.parseLong(deviceId)));
+            tvId.setText(Long.toHexString(Long.parseLong(deviceId)).toUpperCase());
         }
     }
 
@@ -179,7 +179,7 @@ public class SettingsActivity extends Activity {
                             deviceId = sharedPref.getString(EMULATOR_ID_KEY, "");
                         }
                     }
-                    tvId.setText(Long.toHexString(Long.parseLong(deviceId)));
+                    tvId.setText(Long.toHexString(Long.parseLong(deviceId)).toUpperCase());
                 }
                 return;
             }

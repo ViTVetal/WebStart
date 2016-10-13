@@ -66,6 +66,7 @@ public class MainActivity extends Activity {
     private long startTime;
     MyRunnable runnable;
     private final String EMULATOR_ID_KEY = "emulator_id";
+    private String currentURL = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,6 +104,7 @@ public class MainActivity extends Activity {
         webview.setWebViewClient(new WebViewClient() {
             @Override public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
                 webview.loadUrl("file:///android_asset/error.html");
+                currentURL = "file:///android_asset/error.html";
             } });
         webview.getSettings().setJavaScriptEnabled(true);
         webview.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
@@ -200,7 +202,7 @@ public class MainActivity extends Activity {
         }
 
         String url = String.format(urlPattern,
-                Long.toHexString(Long.parseLong(deviceId)),
+                Long.toHexString(Long.parseLong(deviceId)).toUpperCase(),
                 timeFromStart);
 
         RequestQueue queue = Volley.newRequestQueue(this);
@@ -213,9 +215,10 @@ public class MainActivity extends Activity {
                         try {
                             String url = response.getString("url");
 
-                            if(url != null && !TextUtils.isEmpty(url)) {
+                            if(url != null && !TextUtils.isEmpty(url) && !currentURL.equals(url)) {
                                 webview.clearView();
                                 webview.loadUrl(url, headers);
+                                currentURL = url;
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -227,6 +230,7 @@ public class MainActivity extends Activity {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         webview.loadUrl("file:///android_asset/error.html");
+                        currentURL = "file:///android_asset/error.html";
                     }
                 }
         );

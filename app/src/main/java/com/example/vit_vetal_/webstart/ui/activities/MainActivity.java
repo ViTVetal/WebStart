@@ -191,7 +191,8 @@ public class MainActivity extends Activity {
 
         String deviceId = getDeviceId(this);
 
-        if(deviceId == null || TextUtils.isEmpty(deviceId) || Long.parseLong(deviceId) <= 0) {
+        if(deviceId == null || TextUtils.isEmpty(deviceId) || deviceId.equals("unknown")
+                || deviceId.equals("000000000000000")) {
             SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
             if(TextUtils.isEmpty(sharedPref.getString(EMULATOR_ID_KEY, ""))) {
                 deviceId = String.valueOf(Calendar.getInstance().getTimeInMillis());
